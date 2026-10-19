@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# 이 프로젝트의 env/ 는 환경 코드이다 (위 템플릿의 가상환경 env/ 규칙을 해제)
+!/env/
+
+# 실험 로그는 저장소에 올리지 않는다 (결과는 Notion에 기록)
+logs/
