@@ -80,3 +80,13 @@ def test_cli_writes_jsonl(tmp_path):
     run_mod.main(["--agent", "random", "--preset", "L0", "--seeds", "0-2", "--out", str(out)])
     lines = [json.loads(l) for l in out.read_text(encoding="utf-8").splitlines()]
     assert len(lines) == 3 and all(FIELDS <= set(l) for l in lines)
+
+
+def test_summarize_groups_and_nulls(tmp_path):
+    from runner import summarize
+    out = tmp_path / "x.jsonl"
+    run_mod.main(["--agent", "random", "--preset", "L0", "--seeds", "0-3", "--out", str(out)])
+    (s,) = summarize.summarize(summarize.load_rows([out]))
+    assert s["games"] == 4 and s["algorithm"] == "random" and s["preset"] == "L0"
+    assert s["complaint_miss_mean"] is None and s["nodes_expanded_mean"] is None     # 해당 없음은 null
+    assert 0 <= s["success_rate"] <= 1

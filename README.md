@@ -31,7 +31,7 @@ python -m runner.run --agent random --preset L2 --seeds 0-19
 python -m runner.run --agent random --preset L2 --seeds 0-19 --replan on_complaint
 ```
 
-로그는 `logs/`에 한 판당 한 줄로 쌓인다. `score_*`는 환경이 계산한 성과, `compute_*`는 알고리즘이 쓴 노력이다.
+로그는 `logs/`에 한 판당 한 줄로 쌓인다. 요약표는 `python -m runner.summarize`(CSV는 `--csv summary.csv`)로 만든다. `score_*`는 환경이 계산한 성과, `compute_*`는 알고리즘이 쓴 노력이다.
 해당 없는 값은 `null`이다.
 
 ## 새 알고리즘 만들기
