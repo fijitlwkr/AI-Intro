@@ -1,14 +1,15 @@
 """한 판을 돌리고 로그 한 줄(dict)을 만든다."""
 import random
 import time
+from dataclasses import asdict
 
-from env import DeliveryEnv, ComputeTimeout
+from env import DeliveryEnv, ComputeTimeout, REPORT_FIELDS, PRESETS
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2   # 1 -> 2: params, preset_params, git_commit, 특성 지표 칸(compute_*) 추가
 TIME_LIMIT_SEC = 60.0   # I10: 한 판당 계산 시간 제한. 파일럿 뒤 조정한다.
 
 
-def run_game(agent, scenario, time_limit=TIME_LIMIT_SEC, run_id=None):
+def run_game(agent, scenario, time_limit=TIME_LIMIT_SEC, run_id=None, params=None, git_commit=None):
     env = DeliveryEnv(scenario)
     obs = env.reset()
     agent.reset(env, random.Random(scenario.seed))
@@ -39,9 +40,12 @@ def run_game(agent, scenario, time_limit=TIME_LIMIT_SEC, run_id=None):
         "run_id": run_id,
         "algorithm": agent.name,
         "replan": agent.replan,
+        "params": dict(params or {}),                    # 알고리즘 설정(휴리스틱 종류 등). 변형끼리 구분하는 데 쓴다
         "preset": scenario.preset,
+        "preset_params": asdict(PRESETS[scenario.preset]),   # 돌린 시점의 프리셋 값. [초안] 값이 바뀐 걸 알아보는 데 쓴다
         "seed": scenario.seed,
         "scenario_id": scenario.scenario_id,
+        "git_commit": git_commit,
     }
     line.update(env.metrics())
     if failure == "timeout":
@@ -51,6 +55,8 @@ def run_game(agent, scenario, time_limit=TIME_LIMIT_SEC, run_id=None):
         "compute_sec": used,
         "compute_nodes_expanded": expanded,
         "compute_nodes_generated": generated,
-        "actions": env.actions,
     })
+    for name, (_, field, _) in REPORT_FIELDS.items():     # 알리지 않은 특성 지표는 null
+        line[field] = agent.metrics.get(name)
+    line["actions"] = env.actions
     return line

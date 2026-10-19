@@ -31,8 +31,37 @@ python -m runner.run --agent random --preset L2 --seeds 0-19
 python -m runner.run --agent random --preset L2 --seeds 0-19 --replan on_complaint
 ```
 
-로그는 `logs/`에 한 판당 한 줄로 쌓인다. 요약표는 `python -m runner.summarize`(CSV는 `--csv summary.csv`)로 만든다. `score_*`는 환경이 계산한 성과, `compute_*`는 알고리즘이 쓴 노력이다.
-해당 없는 값은 `null`이다.
+로그는 `logs/`에 한 판당 한 줄로 쌓인다. `score_*`는 환경이 계산한 성과, `compute_*`는 알고리즘이 쓴 노력이다.
+해당 없는 값은 `null`이다. 알고리즘 설정은 `--param 키=값`으로 넘기고(여러 번 가능) 로그의 `params`에 남는다.
+
+```
+python -m runner.run --agent random --preset L2 --seeds 0-19 --param legal_only=true
+```
+
+## 결과 요약
+
+```
+python -m runner.summarize                   # 공통 지표 표 + 특성지표 표
+python -m runner.summarize --notion          # Notion 비교표 열 순서로 (값 붙여넣기용)
+python -m runner.summarize --csv summary.csv
+python -m runner.summarize --vs astar ucs --field compute_nodes_expanded   # 절감률: 같은 시드끼리 짝지어 비교
+python -m runner.summarize --vs "csp:forward_checking=true" "csp:forward_checking=false" --field compute_backtracks   # 전파효과
+```
+
+- 같은 시드를 여러 번 돌렸으면 마지막 실행만 쓴다.
+- 프리셋 값이 다르게 돌린 로그, 시드가 다른 알고리즘, 코드 버전이 섞인 경우는 `주의:`로 알려 준다.
+- 최적격차는 L0·L1에서 `ucs` 로그(성공한 판)와 같은 시드끼리 계산한다. 그러려면 UCS도 같은 시드로 돌려야 한다.
+- 항의초과율은 초과 건수 / 발생 건수다. 끝내지 못한 주문의 완료 시각은 H(500)로 계산한다.
+
+## 로그 필드
+
+| 필드 | 내용 |
+|---|---|
+| `schema_version`, `run_id`, `algorithm`, `replan`, `params`, `preset`, `preset_params`, `seed`, `scenario_id`, `git_commit` | 어떤 조건으로 돌렸는지. `git_commit`의 `+dirty`는 커밋하지 않은 변경이 있었다는 뜻 |
+| `score_cost`, `score_avg_time`, `score_success`, `score_complaint_miss`, `score_total_time`, `score_wrong_actions`, `score_complaints`, `score_expired` | 환경이 계산한 성과 |
+| `compute_sec`, `compute_nodes_expanded`, `compute_nodes_generated` | 행동 고르기에 쓴 시간, 노드 수(자동 집계, 탐색용 함수를 쓰지 않으면 null) |
+| `compute_mem_states`, `compute_h_violations`, `compute_replans`, `compute_depth`, `compute_backtracks`, `compute_rules`, `compute_plan_len` | 알고리즘이 `self.report()`로 알린 특성 지표. 알리지 않으면 null |
+| `failure`, `actions` | 실패 이유(`horizon`, `timeout`), 행동 목록 전체 |
 
 ## 새 알고리즘 만들기
 
@@ -55,7 +84,9 @@ class MyAgent(Agent):
 
 - 행동은 6개: `UP DOWN LEFT RIGHT LOAD DELIVER` (`env.Action`). 6개 모두 낼 수 있고, 잘못된 행동은 시간 1, 비용 +10이다.
 - `legal_actions(obs)`는 효과가 있는 행동만 돌려준다 (벽에 부딪히는 이동과 잘못된 행동은 뺀다).
-- 재계획 시점은 `--replan` 설정(`never`, `on_complaint`, `every_step`)이고 `self.needs_replan(obs)`로 확인한다.
+- 재계획 시점은 `--replan` 설정(`never`, `on_complaint`, `every_step`)이고 `self.needs_replan(obs)`로 확인한다. 이 함수를 쓰면 재계획 횟수(`replans`)가 자동으로 센다.
+- 특성 지표는 판 도중에 `self.report("backtracks", 1)`처럼 알린다. 쓸 수 있는 이름과 모으는 방식(합계, 최대, 마지막 값)은 `env/agent.py`의 `REPORT_FIELDS`에 있다. `reset`을 다시 정의하면 맨 앞에서 `super().reset(env, rng)`를 부른다.
+- 알고리즘 설정(휴리스틱 종류 등)은 생성자 인자로 받으면 `--param`으로 바꿔 돌릴 수 있고 로그에 남는다.
 - 알고리즘은 현재 항의만 본다. 앞으로 올 항의는 보이지 않는다. 확률이 필요하면 `self.env.outcomes(state, action)`를 쓴다.
 
 ## 시나리오 파일

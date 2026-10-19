@@ -2,11 +2,13 @@
 
 예)  python -m runner.run --agent random --preset L0 --seeds 0-4
      python -m runner.run --agent random --preset L2 --seeds 0-19 --replan on_complaint
+     python -m runner.run --agent random --preset L2 --seeds 0-19 --param legal_only=true
 로그는 logs/ 에 쌓이고 저장소에는 올라가지 않는다(.gitignore).
 """
 import argparse
 import importlib
 import json
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -28,6 +30,41 @@ def parse_seeds(text):
     return seeds
 
 
+def parse_params(items):
+    """--param key=value 를 {키: 값}으로. 값은 true/false, 정수, 실수로 읽고 아니면 문자열."""
+    params = {}
+    for item in items or []:
+        if "=" not in item:
+            raise SystemExit(f"--param 은 key=value 모양이어야 합니다: {item}")
+        key, value = item.split("=", 1)
+        low = value.lower()
+        if low in ("true", "false"):
+            params[key] = low == "true"
+            continue
+        for cast in (int, float):
+            try:
+                params[key] = cast(value)
+                break
+            except ValueError:
+                continue
+        else:
+            params[key] = value
+    return params
+
+
+def git_commit():
+    """지금 코드의 커밋 짧은 번호. 커밋하지 않은 변경이 있으면 '+dirty'가 붙는다. git이 없으면 None."""
+    try:
+        run = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True, timeout=10)
+        head = run("rev-parse", "--short", "HEAD")
+        if head.returncode != 0:
+            return None
+        dirty = run("status", "--porcelain").stdout.strip() != ""
+        return head.stdout.strip() + ("+dirty" if dirty else "")
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
 def resolve_agent(name):
     if name in REGISTRY:
         return REGISTRY[name]
@@ -43,11 +80,15 @@ def main(argv=None):
     ap.add_argument("--preset", default="L2", choices=sorted(PRESETS))
     ap.add_argument("--seeds", default="0-19", help="예: 0-19 또는 0,5,7")
     ap.add_argument("--replan", default="never", choices=REPLAN_MODES)
+    ap.add_argument("--param", action="append", metavar="KEY=VALUE",
+                    help="알고리즘 설정. 에이전트 생성자에 넘기고 로그의 params에 남긴다. 여러 번 쓸 수 있다 (예: --param legal_only=true)")
     ap.add_argument("--time-limit", type=float, default=TIME_LIMIT_SEC)
     ap.add_argument("--out", help="로그 파일 경로 (기본: logs/<알고리즘>_<프리셋>_<시각>.jsonl)")
     args = ap.parse_args(argv)
 
     agent_cls = resolve_agent(args.agent)
+    params = parse_params(args.param)
+    commit = git_commit()
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     out = Path(args.out) if args.out else ROOT / "logs" / f"{args.agent}_{args.preset}_{stamp}.jsonl"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -58,8 +99,12 @@ def main(argv=None):
         for seed in parse_seeds(args.seeds):
             sc, from_file = scenario_mod.load_for(args.preset, seed)
             generated += 0 if from_file else 1
-            agent = agent_cls(replan=args.replan)
-            line = run_game(agent, sc, args.time_limit, run_id=f"{stamp}-{args.agent}-{args.preset}-{seed:03d}")
+            try:
+                agent = agent_cls(replan=args.replan, **params)
+            except TypeError as e:
+                raise SystemExit(f"{args.agent} 에이전트가 --param {sorted(params)} 를 받지 못합니다: {e}")
+            line = run_game(agent, sc, args.time_limit, run_id=f"{stamp}-{args.agent}-{args.preset}-{seed:03d}",
+                            params=params, git_commit=commit)
             f.write(json.dumps(line, ensure_ascii=False) + "\n")
             rows.append(line)
 
