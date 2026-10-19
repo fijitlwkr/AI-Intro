@@ -63,6 +63,13 @@ python -m runner.summarize --vs "csp:forward_checking=true" "csp:forward_checkin
 | `compute_mem_states`, `compute_h_violations`, `compute_replans`, `compute_depth`, `compute_backtracks`, `compute_rules`, `compute_plan_len` | 알고리즘이 `self.report()`로 알린 특성 지표. 알리지 않으면 null |
 | `failure`, `actions` | 실패 이유(`horizon`, `timeout`), 행동 목록 전체 |
 
+## 들어 있는 알고리즘
+
+| 이름 | 파일 | 설명 |
+|---|---|---|
+| `random` | `agents/random_agent.py` | 하한 기준선. 6개 행동 중 균등 선택. `legal_only=true`면 가능한 행동만 |
+| `rule` | `agents/rule_agent.py` | 단순규칙기반. 탐색 없이 규칙 순서대로: 항의 배달지로 이동(마감 안에 갈 수 있을 때) → 내리기 → 싣기(3종 금지 회피) → 가장 가까운 할 일로 이동. `complaint_priority=false`면 항의를 무시 |
+
 ## 새 알고리즘 만들기
 
 1. `agents/my_algo.py`에서 `env.Agent`를 상속하고 `choose_action(obs)`를 구현한다.
