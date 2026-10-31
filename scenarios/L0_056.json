@@ -1,0 +1,9 @@
+{
+ "scenario_id": "L0-056",
+ "preset": "L0",
+ "seed": 56,
+ "params": {"T": 20, "ensure_all_menus": true, "horizon": 500, "n": 8, "q": 0.0},
+ "start": [9, 5],
+ "orders": [{"from": "피자", "to": "공원"}, {"from": "탕수육", "to": "회사"}, {"from": "피자", "to": "학교"}, {"from": "피자", "to": "집"}, {"from": "피자", "to": "회사"}, {"from": "김치", "to": "아파트"}, {"from": "김치", "to": "회사"}, {"from": "피자", "to": "학교"}],
+ "complaints": []
+}
