@@ -1,0 +1,9 @@
+{
+ "scenario_id": "L2-085",
+ "preset": "L2",
+ "seed": 85,
+ "params": {"T": 20, "ensure_all_menus": true, "horizon": 500, "n": 8, "q": 0.03},
+ "start": [1, 6],
+ "orders": [{"from": "김치", "to": "회사"}, {"from": "김치", "to": "공원"}, {"from": "탕수육", "to": "회사"}, {"from": "피자", "to": "아파트"}, {"from": "피자", "to": "회사"}, {"from": "김치", "to": "아파트"}, {"from": "피자", "to": "공원"}, {"from": "피자", "to": "집"}],
+ "complaints": [{"t": 94, "dest": "학교"}, {"t": 154, "dest": "집"}, {"t": 217, "dest": "학교"}, {"t": 243, "dest": "공원"}, {"t": 297, "dest": "공원"}, {"t": 386, "dest": "학교"}, {"t": 418, "dest": "회사"}, {"t": 459, "dest": "학교"}]
+}

@@ -2,7 +2,7 @@
  "scenario_id": "L3-007",
  "preset": "L3",
  "seed": 7,
- "params": {"n": 12, "q": 0.06, "T": 15, "ensure_all_menus": true, "horizon": 500},
+ "params": {"T": 15, "ensure_all_menus": true, "horizon": 500, "n": 12, "q": 0.06},
  "start": [3, 1],
  "orders": [{"from": "피자", "to": "집"}, {"from": "피자", "to": "학교"}, {"from": "김치", "to": "공원"}, {"from": "김치", "to": "공원"}, {"from": "김치", "to": "집"}, {"from": "피자", "to": "회사"}, {"from": "김치", "to": "학교"}, {"from": "피자", "to": "회사"}, {"from": "피자", "to": "학교"}, {"from": "탕수육", "to": "집"}, {"from": "탕수육", "to": "학교"}, {"from": "김치", "to": "집"}],
  "complaints": [{"t": 8, "dest": "학교"}, {"t": 44, "dest": "아파트"}, {"t": 80, "dest": "공원"}, {"t": 98, "dest": "아파트"}, {"t": 136, "dest": "공원"}, {"t": 159, "dest": "회사"}, {"t": 187, "dest": "집"}, {"t": 206, "dest": "회사"}, {"t": 238, "dest": "회사"}, {"t": 257, "dest": "공원"}, {"t": 293, "dest": "집"}, {"t": 355, "dest": "회사"}, {"t": 395, "dest": "공원"}, {"t": 412, "dest": "아파트"}, {"t": 489, "dest": "공원"}]
