@@ -85,3 +85,39 @@ def test_without_complaint_rules_matches_rule_agent_without_priority():
         a = _game(REGISTRY["rule"], "L2", seed, complaint_priority=False)
         b = _game(LogicAgent, "L2", seed, complaint_rules=False)
         assert a["actions"] == b["actions"], seed
+
+
+# ---------- KB를 안전 필터로 쓰는 설정 (policy="random") ----------
+def test_filter_over_random_equals_legal_only_random():
+    # KB가 정한 '해도 되는 행동' 중에서 같은 방식으로 무작위로 고르면 Random(legal_only=True)와 행동 열이 같다.
+    from agents.random_agent import RandomAgent
+    for preset in ("L0", "L1", "L2", "L3"):
+        for seed in range(8):
+            a = _game(RandomAgent, preset, seed, legal_only=True)
+            b = _game(LogicAgent, preset, seed, policy="random")
+            assert a["actions"] == b["actions"], (preset, seed)
+
+
+def test_filter_never_violates_with_full_kb_and_reports_rules():
+    for seed in range(5):
+        line = _game(LogicAgent, "L2", seed, policy="random")
+        assert line["score_wrong_actions"] == 0
+        assert line["compute_rules"] == sum(len(s) for s in build_rules(True, True, "random")) == 7
+
+
+def test_filter_without_ban_rule_can_violate_then_learns():
+    base = sum(len(s) for s in build_rules(False, True, "random"))
+    saw = False
+    for seed in range(60):
+        line = _game(LogicAgent, "L1", seed, policy="random", ban_rule=False)
+        if line["score_wrong_actions"]:
+            saw = True
+            assert line["compute_rules"] > base
+            assert line["score_wrong_actions"] <= line["compute_rules"] - base
+    assert saw
+
+
+def test_invalid_policy_rejected():
+    import pytest
+    with pytest.raises(ValueError):
+        LogicAgent(policy="greedy")
