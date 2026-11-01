@@ -69,6 +69,7 @@ python -m runner.summarize --vs "csp:forward_checking=true" "csp:forward_checkin
 |---|---|---|
 | `random` | `agents/random_agent.py` | 하한 기준선. 6개 행동 중 균등 선택. `legal_only=true`면 가능한 행동만 |
 | `greedy` | `agents/greedy_agent.py` | Greedy Best-first. 전체 frontier에서 `h`만으로 선택하고 같은 값은 생성 순서. `heuristic=mst`(기본) 또는 `max_distance`, `objective=c1`(기본) 또는 `c2` |
+| `astar` | `agents/astar_agent.py` | A*. `f=g+h`, 더 싼 경로 발견 시 재탐색. `heuristic=max_distance/mst/constraint`, `objective=c1/c2`. 기본은 mst, c1, 처음 한 번 계획 |
 | `rule` | `agents/rule_agent.py` | 단순규칙기반. 탐색 없이 규칙 순서대로: 항의 배달지로 이동(마감 안에 갈 수 있을 때) → 내리기 → 싣기(3종 금지 회피) → 가장 가까운 할 일로 이동. `complaint_priority=false`면 항의를 무시 |
 | `logic` | `agents/logic_agent.py` | 논리 규칙 에이전트. 지각을 KB에 TELL하고 호른 규칙을 전방 추론해 행동을 ASK한다(`agents/horn_kb.py`). 기본 KB는 `rule`과 같은 행동을 한다. `ban_rule=false`는 3종 금지 규칙을 빼고 실패에서 학습, `complaint_rules=false`는 항의 규칙을 뺀다. `policy=random`은 KB를 안전 필터로만 쓰고(해도 되는 행동을 KB가 정함) 그 중에서 무작위로 고른다. 규칙수는 `compute_rules`로 기록 |
 
@@ -88,6 +89,24 @@ python -m runner.summarize --preset L2 --notion
 - 노드 수는 공통 탐색 API가 센다. `compute_mem_states`는 frontier, 부모 표, 휴리스틱 캐시에 저장한 레코드 수의 합의 최댓값이며 바이트 단위 메모리가 아니다. 허용성을 실행 중 검증하지 않으므로 `compute_h_violations`는 null이다.
 - 로그를 특정 폴더에 `--out logs/greedy_review/greedy_L2.jsonl`처럼 저장했다면 요약에도 `python -m runner.summarize "logs/greedy_review/*.jsonl" --notion`처럼 해당 경로를 지정한다. 기본 요약은 하위 폴더까지 읽지 않는다.
 - 원본 JSONL은 한 판 한 줄이다. `--notion --csv logs/notion_summary.csv`로 노션용 요약을 CSV로 저장할 수 있다. 최적격차는 같은 시드의 성공한 UCS 로그가 있어야 계산된다. 현재 요약기의 최적격차는 총비용(c1) 기준이다.
+
+## A* 실행과 결과 확인
+
+```powershell
+python -m runner.run --agent astar --preset L2 --seeds 0-99 --param heuristic=mst --param objective=c1
+python -m runner.run --agent astar --preset L2 --seeds 0-99 --param heuristic=constraint --param objective=c1
+python -m runner.summarize --preset L2 --notion
+```
+
+- `max_distance`, `mst`는 Greedy와 같은 거리 하한이다. `c2`에서는 주문별 독립 최소 완료 시간 합과 큰 값을 사용한다.
+- `constraint`는 MST 기반 하한과 작은 패턴 데이터베이스(PDB) 값 중 큰 값이다. 메뉴마다 주문 개수가 가장 많은 조합 하나씩(최대 3조합)을 남기고, 벽과 나머지 주문을 없앤 문제의 정확한 남은 비용을 사용한다. 남긴 주문의 적재 후 배달과 3종 금지를 유지한다. 추상 상태는 최대 3^3 × 8개이며 역방향 Dijkstra로 푼다.
+- 실제 실행 경로는 완화 문제에서 같은 순서로 이동·적재·배달할 수 있고, 그 비용은 실제 비용 이하이다. 따라서 PDB도 하한이며, 두 하한의 최댓값도 하한이다. 작은 문제의 모든 도달 가능 상태에서 독립 최단경로 오라클로 과대추정 여부와 A* 해 비용을 검사한다(`tests/test_astar_agent.py`).
+- 휴리스틱은 `agents.heuristics.DeliveryHeuristic(env, name, objective)`로 분리했다. IDA*에서도 호출할 수 있다. `heuristic=zero`는 검증용 UCS 동작이며 팀원의 UCS 구현을 대체하지 않는다.
+- 같은 `f`는 작은 `h`부터, 그다음은 생성 순서로 처리한다. 더 작은 `g`를 발견하면 이미 확장한 상태도 다시 큐에 넣으며 오래된 큐 항목은 건너뛴다.
+- 미래 신규 항의가 없는 결정적 모델을 사용한다. 현재 항의는 상태 전이에 반영하지만 휴리스틱은 항의 비용을 무시한다. L0·L1의 정적 문제와 L2·L3의 미래 항의를 무시한 계획 모델을 구분해야 한다. L2·L3 실제 확률 환경의 최적성을 주장하지 않는다.
+- 노드 수는 실제 게임 모델을 탐색한 횟수다. PDB 전처리 노드는 포함하지 않으며 전처리 시간은 `compute_sec`에 포함한다. 저장 상태 지표는 frontier·best_g·부모 표·휴리스틱 캐시·PDB 값 표의 레코드 수 합의 최대다(전처리 임시 그래프와 바이트 메모리는 제외).
+- 게임 실행 중 정확한 남은 비용을 매번 계산하지 않으므로 `compute_h_violations`는 null이다. 허용성 검증은 별도 테스트 결과로 기록하고, 최적격차는 L0·L1에서 동일 조건의 UCS 결과가 있을 때만 적는다.
+- 설정별 100판을 별도 폴더에 저장했다면 `python -m runner.summarize "logs/astar_final/*.jsonl" --preset L2 --notion`으로 요약한다. 실험 로그는 로컬에만 보관한다.
 
 ## 새 알고리즘 만들기
 
