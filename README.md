@@ -108,6 +108,21 @@ python -m runner.summarize --preset L2 --notion
 - 게임 실행 중 정확한 남은 비용을 매번 계산하지 않으므로 `compute_h_violations`는 null이다. 허용성 검증은 별도 테스트 결과로 기록하고, 최적격차는 L0·L1에서 동일 조건의 UCS 결과가 있을 때만 적는다.
 - 설정별 100판을 별도 폴더에 저장했다면 `python -m runner.summarize "logs/astar_final/*.jsonl" --preset L2 --notion`으로 요약한다. 실험 로그는 로컬에만 보관한다.
 
+## 한 번 계획 vs 매 스텝 재계획 (A* 기반)
+
+```powershell
+python -m runner.replanning --preset L2 --seeds 0-99 --heuristic mst --objective c1
+python -m runner.summarize "logs/replanning_final/*.jsonl" --preset L2
+```
+
+- `runner.replanning`은 같은 A*, 휴리스틱, 목적함수, 프리셋, 시드, 판당 계산 제한으로 두 모드를 실행한다. 각 모드는 별도 프로세스에서 시작한다. 원본 로그의 알고리즘 이름은 둘 다 `astar`이고 `replan`으로 구분한다.
+- `never`: 처음 전체 계획을 만들고 끝까지 실행한다. `every_step`: 행동을 고를 때마다 현재 관찰 상태에서 전체 계획을 새로 만든 뒤 첫 행동만 실행한다. 미래 항의 일정은 읽지 않는다. 현재 항의의 남은 시간과 초과 페널티는 전이에 반영한다.
+- 기본은 L2, 시드 0~99(각 100판), MST, c1, 판당 계산시간 총합 60초다. `--objective c2`, `--heuristic constraint`, `--out-dir 경로`로 별도 조건도 실행할 수 있다. c2에는 항의 초과 페널티가 직접 포함되지 않는다.
+- `logs/replanning_final/`에 모드별 JSONL, `L2_mst_c1_notion.csv`, `L2_mst_c1_comparison.json`을 저장한다. JSON에는 두 모드의 전체 지표와 같은 시드에서 비용이 감소/동일/증가한 판수가 있다. 비용 차이의 짝 비교는 두 방식 모두 성공한 판에서만 계산하고 실패 판수는 전체 지표에 남긴다.
+- `compute_replans`는 최초 계획을 제외한다. 성공한 every_step 판에서는 실행한 행동 수 - 1이다. `compute_nodes_expanded`와 `compute_sec`는 모든 재계획을 합친 판당 값이다. 계산시간 제한도 판 전체에 누적 적용한다.
+- `compute_plan_len`은 마지막으로 만든 계획 길이다. every_step에서는 마지막 행동 직전의 짧은 계획이 남으므로 최초 전체 계획 길이와 직접 비교하지 않는다.
+- 기존 `runner.summarize --vs astar astar`는 재계획 모드를 구분하지 못하므로 이 비교에 사용하지 않는다. 위의 전용 비교 JSON 또는 모드별 요약 표를 사용한다. 기본 로그 요약은 하위 폴더를 자동으로 읽지 않으므로 경로를 지정한다.
+
 ## 새 알고리즘 만들기
 
 1. `agents/my_algo.py`에서 `env.Agent`를 상속하고 `choose_action(obs)`를 구현한다.
