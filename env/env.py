@@ -48,12 +48,21 @@ class DeliveryEnv:
         self._check_deadline()
         return self.rules.legal_actions(state)
 
-    def successors(self, state):
-        """[(행동, [(확률, 다음 상태, Cost), ...]), ...]. 호출 한 번이 expanded 1, 돌려준 경우의 수가 generated."""
+    def successors(self, state, *, new_complaints=True):
+        """후속 상태와 비용. 호출 한 번이 expanded 1, 반환한 결과 수가 generated.
+
+        기본값은 전체 확률 모델이다. new_complaints=False는 현재 항의만
+        진행하고 미래 신규 항의는 없는 결정적 계획 모델이다. 실제 판에는 영향이 없다.
+        """
         self._check_deadline()
         out = []
         for a in self.rules.legal_actions(state):
-            out.append((a, self.rules.outcomes(state, a)))
+            if new_complaints:
+                outcomes = self.rules.outcomes(state, a)
+            else:
+                nxt, cost, _ = self.rules.step(state, a, lambda tick: None)
+                outcomes = [(1.0, nxt, cost)]
+            out.append((a, outcomes))
         self.nodes_expanded += 1
         self.nodes_generated += sum(len(o) for _, o in out)
         self.successor_calls += 1

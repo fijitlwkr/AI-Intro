@@ -68,8 +68,26 @@ python -m runner.summarize --vs "csp:forward_checking=true" "csp:forward_checkin
 | 이름 | 파일 | 설명 |
 |---|---|---|
 | `random` | `agents/random_agent.py` | 하한 기준선. 6개 행동 중 균등 선택. `legal_only=true`면 가능한 행동만 |
+| `greedy` | `agents/greedy_agent.py` | Greedy Best-first. 전체 frontier에서 `h`만으로 선택하고 같은 값은 생성 순서. `heuristic=mst`(기본) 또는 `max_distance`, `objective=c1`(기본) 또는 `c2` |
 | `rule` | `agents/rule_agent.py` | 단순규칙기반. 탐색 없이 규칙 순서대로: 항의 배달지로 이동(마감 안에 갈 수 있을 때) → 내리기 → 싣기(3종 금지 회피) → 가장 가까운 할 일로 이동. `complaint_priority=false`면 항의를 무시 |
 | `logic` | `agents/logic_agent.py` | 논리 규칙 에이전트. 지각을 KB에 TELL하고 호른 규칙을 전방 추론해 행동을 ASK한다(`agents/horn_kb.py`). 기본 KB는 `rule`과 같은 행동을 한다. `ban_rule=false`는 3종 금지 규칙을 빼고 실패에서 학습, `complaint_rules=false`는 항의 규칙을 뺀다. `policy=random`은 KB를 안전 필터로만 쓰고(해도 되는 행동을 KB가 정함) 그 중에서 무작위로 고른다. 규칙수는 `compute_rules`로 기록 |
+
+## Greedy 실행과 결과 확인
+
+```powershell
+python -m runner.run --agent greedy --preset L2 --seeds 0-99 --param heuristic=mst --param objective=c1
+python -m runner.summarize --preset L2
+python -m runner.summarize --preset L2 --notion
+```
+
+- `c1`: 벽을 반영한 최단거리로 필수 식당·배달지까지의 최대 거리 또는 MST 이동 하한을 계산한다.
+- `c2`: 주문별 독립적인 최소 완료 시간을 주문 개수로 가중해 더하고 이동 하한과 큰 값을 쓴다. 싣기·배달 시간도 포함한다. 두 거리 휴리스틱의 비교는 우선 `c1`에서 한다.
+- 탐색은 `env.successors(state, new_complaints=False)`를 사용한다. 현재 항의는 진행하지만 미래 신규 항의는 없다고 가정한다. 실제 게임의 항의 발생과 기본 확률 API는 그대로다. 휴리스틱은 항의 비용을 무시하므로 항의 우선 방문 정책은 아니다.
+- `--replan never`가 기본이다. 처음 만든 계획을 그대로 실행한다. 실제 전이에서는 항상 3종 적재 금지를 지킨다.
+- 팀 비교용 측정은 L2, 시드 0~99(설정별 100판)로 맞춘다. Python 버전, 측정일, 코드 버전, 재계획 모드도 기록한다. 개발 중 실행의 `+dirty` 표시는 미커밋 코드라는 뜻이다.
+- 노드 수는 공통 탐색 API가 센다. `compute_mem_states`는 frontier, 부모 표, 휴리스틱 캐시에 저장한 레코드 수의 합의 최댓값이며 바이트 단위 메모리가 아니다. 허용성을 실행 중 검증하지 않으므로 `compute_h_violations`는 null이다.
+- 로그를 특정 폴더에 `--out logs/greedy_review/greedy_L2.jsonl`처럼 저장했다면 요약에도 `python -m runner.summarize "logs/greedy_review/*.jsonl" --notion`처럼 해당 경로를 지정한다. 기본 요약은 하위 폴더까지 읽지 않는다.
+- 원본 JSONL은 한 판 한 줄이다. `--notion --csv logs/notion_summary.csv`로 노션용 요약을 CSV로 저장할 수 있다. 최적격차는 같은 시드의 성공한 UCS 로그가 있어야 계산된다. 현재 요약기의 최적격차는 총비용(c1) 기준이다.
 
 ## 새 알고리즘 만들기
 
