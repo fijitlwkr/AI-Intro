@@ -2,9 +2,13 @@
 from .random_agent import RandomAgent
 from .rule_agent import RuleAgent
 from .logic_agent import LogicAgent
+from .greedy_agent import GreedyAgent
+from .astar_agent import AStarAgent
 
 REGISTRY = {
     "random": RandomAgent,
     "rule": RuleAgent,
     "logic": LogicAgent,
+    "greedy": GreedyAgent,
+    "astar": AStarAgent,
 }
