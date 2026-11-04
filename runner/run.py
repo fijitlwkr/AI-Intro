@@ -90,7 +90,7 @@ def main(argv=None):
     params = parse_params(args.param)
     commit = git_commit()
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    out = Path(args.out) if args.out else ROOT / "logs" / f"{args.agent}_{args.preset}_{stamp}.jsonl"
+    out = Path(args.out) if args.out else ROOT / "logs" / f"{args.agent.replace(':', '_')}_{args.preset}_{stamp}.jsonl"
     out.parent.mkdir(parents=True, exist_ok=True)
 
     generated = 0
