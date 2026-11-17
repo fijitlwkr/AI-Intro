@@ -1,0 +1,18 @@
+{
+  "registered_at": "2026-11-17",
+  "note": "결과를 보기 전에 확정한 비교쌍. 결과를 본 뒤에 바꾸지 않는다. 바꾸려면 이유와 날짜를 이 파일에 남긴다.",
+  "metrics_reported": ["score_cost", "score_avg_time", "complaint_rate"],
+  "pairs": [
+    {"id": 1, "a": "astar", "b": "rule",  "expect": {"score_cost": "A<B"}, "text": "astar가 낮음"},
+    {"id": 2, "a": "astar", "b": "greedy", "expect": {"score_cost": "A<B"}, "text": "astar가 낮음"},
+    {"id": 3, "a": "rule",  "b": "logic",  "expect": {"score_cost": "tie"}, "text": "동률(같은 정책)"},
+    {"id": 4, "a": "greedy", "b": "rule",  "expect": {"score_cost": "A>B"}, "text": "greedy가 더 높음(이전 기록 기반)"},
+    {"id": 5, "a": "astar", "b": "ucs",    "expect": {"score_cost": "tie"}, "text": "동률(같은 목적함수 objective=c1)"},
+    {"id": 6, "a": "astar", "b": "dfs",    "expect": {"score_cost": "A<B"}, "text": "dfs가 높음(최적 보장 없음)"},
+    {"id": 7, "a": "astar@on_complaint", "b": "astar@never",
+     "expect": {"complaint_rate": "A<B", "score_avg_time": "A>B"}, "text": "항의초과율 감소, 평균배달시간 증가"}
+  ],
+  "candidates_unconfirmed": [
+    {"a": "idastar:memo=true", "b": "astar", "expect": {"score_cost": "tie"}, "text": "보류 중. 확정 전에는 실행하지 않는다."}
+  ]
+}
