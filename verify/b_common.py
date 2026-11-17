@@ -63,9 +63,8 @@ def finish(report, out=None):
         path = Path(out)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")
-    brief = {k: v for k, v in report.items() if k not in ("details", "groups", "files", "hashes", "environment")}
+    brief = {k: v for k, v in report.items() if not isinstance(v, (list, dict))}
     print(json.dumps(brief, ensure_ascii=False, indent=2))
     if out:
         print(f"상세 결과: {Path(out).resolve()}")
     return 1 if report["status"] == "fail" else 0
-

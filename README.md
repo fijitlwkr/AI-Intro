@@ -189,4 +189,3 @@ python -m verify.b1_timing --param heuristic=mst --param objective=c1 --out logs
 - CSP는 main에 없고 별도 팀원 브랜치에 있으므로 자동 실행/수정하지 않는다. 담당자와 등록·시간 제한·부분 적재 상태의 제약 처리를 확인한 뒤 포함한다.
 - 타이밍 도구는 계측 래퍼의 오버헤드가 있으므로 실제 성능표에 섞지 않는다. CV가 10%를 넘으면 해당 조건의 시간 안정성은 통과로 쓰지 않는다.
 - JSON 판정은 pass/conditional/fail이다. 통과한 범위와 미검증 범위를 나눠 보고하고, 최종 발표용 재실행은 검토 후 병합된 코드에서 한다.
-

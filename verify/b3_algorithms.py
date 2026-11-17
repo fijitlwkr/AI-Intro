@@ -64,7 +64,7 @@ def main(argv=None):
     ap.add_argument("--seeds", default="0-9")
     ap.add_argument("--objectives", nargs="+", choices=("c1", "c2"), default=["c1", "c2"])
     ap.add_argument("--include-iterative", action="store_true")
-    ap.add_argument("--time-limit", type=float, default=5.0)
+    ap.add_argument("--time-limit", type=float, default=60.0)
     ap.add_argument("--out-dir", required=True)
     args = ap.parse_args(argv)
     require_clean()
@@ -98,7 +98,7 @@ def main(argv=None):
     report = {
         "status": "fail" if errors else "conditional",
         "automated_status": "fail" if errors else ("conditional" if incomplete else "pass"),
-        "games": len(all_rows), "cases": len(details),
+        "games": len(all_rows), "cases": len(details), "time_limit_sec_per_game": args.time_limit,
         "optimal_cost_comparisons": sum(d["compared"] for d in details),
         "mismatches": errors, "incomplete_games": incomplete, "details": details,
         "scope": "저장된 실제 크기 L0/L1. 같은 목표함수의 성공한 UCS/A*/IDA* 비교",
@@ -112,4 +112,3 @@ def main(argv=None):
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
