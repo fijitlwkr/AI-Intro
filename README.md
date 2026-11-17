@@ -159,3 +159,34 @@ python -m runner.make_scenarios --presets L2 --seeds 0-99
 ```
 
 파일이 오래되면 `python -m pytest`가 알려 준다.
+
+## 파트 B 검증 도구 (조진수)
+
+별도 검증 브랜치에서 작업하며 main이나 다른 팀원의 브랜치에 직접 push하지 않는다.
+
+```powershell
+# B1: 기록된 행동열 재생 + 별도 산식/집계 검산 (독립 시뮬레이터 아님)
+python -m verify.b1_metrics logs/greedy_final logs/astar_final logs/replanning_final --out logs/runs/20261117/b/b1_metrics.json
+
+# B2: 400개 시나리오 구조·분포와 A* 비용 이상치
+python -m verify.b2_scenarios --outlier-logs "logs/astar_final/L1_*_c1.jsonl" --out logs/runs/20261117/b/b2_scenarios.json
+
+# B3: 실제 크기 L0/L1, 두 목적함수, 팀원 UCS와 A* 3종 등 교차 검사
+python -m verify.b3_algorithms --seeds 0-9 --out-dir logs/runs/20261117/b/b3
+
+# 반복 심화는 memo=true 변형임을 명시하고 별도 실행
+python -m verify.b3_algorithms --presets L1 --seeds 0-2 --include-iterative --out-dir logs/runs/20261117/b/b3_iterative
+
+# B1-b: 한 번에 하나만 실행. 5회 반복 CV, 외부 계측, 순서/캐시 진단
+python -m verify.b1_timing --param heuristic=mst --param objective=c1 --out logs/runs/20261117/b/b1_timing.json
+```
+
+- B3/타이밍은 미커밋 코드에서 실행을 거부한다. 결과 JSON에 날짜, 커밋, Python, OS, 기계 식별을 남긴다.
+- B1은 현재 공용 DeliveryEnv로 행동열을 재생하고 총비용·완료시각 합·미완료 H 처리·전체 합산 비율·나쁜 10% 평균을 별도 산식으로 확인한다. 전이/사건 판정은 원래 환경을 공유하므로 명세 기반 독립 구현의 증거가 아니다. 비용을 일부러 바꾼 로그를 거부하는 테스트도 있다.
+- B1 독립 시뮬레이터는 상세 규칙 명세와 그 구현을 읽지 않은 별도 작성자가 필요하다. 이 대화는 기존 규칙 구현을 읽은 이력이 있어 독립성을 주장하지 않는다. B1 도구가 불일치 0건이어도 전체 판정은 conditional이다.
+- B2는 생성기 일치(A1)와 별개인 내용 검사다. 분포의 근사 3SE 경고는 탐색적 경고이며, 다중 비교/메뉴 포함 조건 때문에 단독으로 버그를 입증하지 않는다. 이상치는 같은 설정·커밋끼리의 IQR 1.5배 기준으로 목록화한다.
+- B3는 같은 목적함수에서만 성공한 UCS와 A*/IDA* 결과를 비교한다(c2는 같은 판의 평균배달시간으로 비교해도 동일). 미완료 판은 숨기지 않고 따로 기록한다. 공통 환경의 규칙 오류나 비구현자의 최종 리뷰는 이 비교만으로 검증되지 않는다.
+- CSP는 main에 없고 별도 팀원 브랜치에 있으므로 자동 실행/수정하지 않는다. 담당자와 등록·시간 제한·부분 적재 상태의 제약 처리를 확인한 뒤 포함한다.
+- 타이밍 도구는 계측 래퍼의 오버헤드가 있으므로 실제 성능표에 섞지 않는다. CV가 10%를 넘으면 해당 조건의 시간 안정성은 통과로 쓰지 않는다.
+- JSON 판정은 pass/conditional/fail이다. 통과한 범위와 미검증 범위를 나눠 보고하고, 최종 발표용 재실행은 검토 후 병합된 코드에서 한다.
+
