@@ -1,12 +1,22 @@
 """한 판을 돌리고 로그 한 줄(dict)을 만든다."""
+import hashlib
+import json
+import platform
 import random
 import time
 from dataclasses import asdict
 
 from env import DeliveryEnv, ComputeTimeout, REPORT_FIELDS, PRESETS
 
-SCHEMA_VERSION = 2   # 1 -> 2: params, preset_params, git_commit, 특성 지표 칸(compute_*) 추가
+SCHEMA_VERSION = 3   # 1 -> 2: params, preset_params, git_commit, 특성 지표 칸(compute_*) 추가
+                     # 2 -> 3: scenario_sha256, python_version, platform 추가 (검증 A1)
 TIME_LIMIT_SEC = 60.0   # I10: 한 판당 계산 시간 제한. 파일럿 뒤 조정한다.
+
+
+def scenario_sha256(scenario):
+    """시나리오 내용의 해시. 파일에서 읽었든 즉석에서 만들었든 내용이 같으면 같은 값이다."""
+    body = json.dumps(scenario.to_json(), sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(body.encode("utf-8")).hexdigest()
 
 
 def run_game(agent, scenario, time_limit=TIME_LIMIT_SEC, run_id=None, params=None, git_commit=None):
@@ -46,6 +56,9 @@ def run_game(agent, scenario, time_limit=TIME_LIMIT_SEC, run_id=None, params=Non
         "seed": scenario.seed,
         "scenario_id": scenario.scenario_id,
         "git_commit": git_commit,
+        "scenario_sha256": scenario_sha256(scenario),   # 입력 동일성 확인용
+        "python_version": platform.python_version(),
+        "platform": platform.platform(),
     }
     line.update(env.metrics())
     if failure == "timeout":

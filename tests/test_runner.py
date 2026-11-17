@@ -158,7 +158,7 @@ def test_replans_counted_by_needs_replan():
 def test_params_and_git_commit_are_recorded():
     line = run_game(RandomAgent(legal_only=True), generate("L0", 0), params={"legal_only": True}, git_commit="abc123")
     assert line["params"] == {"legal_only": True} and line["git_commit"] == "abc123"
-    assert line["preset_params"]["q"] == 0.0 and line["schema_version"] == 2
+    assert line["preset_params"]["q"] == 0.0 and line["schema_version"] == 3
     assert line["score_wrong_actions"] == 0               # 가능한 행동만 고르면 잘못된 행동이 없다
 
 

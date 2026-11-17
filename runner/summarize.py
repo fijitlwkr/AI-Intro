@@ -207,6 +207,16 @@ def warnings_for(rows, summary, n_versions):
             notes.append(f"{s['label']} {s['preset']}: 서로 다른 코드 버전({', '.join(s['commits'])})의 로그가 섞여 있습니다.")
         if any(c.endswith("+dirty") for c in s["commits"]):
             notes.append(f"{s['label']} {s['preset']}: 커밋하지 않은 변경이 있는 상태에서 돌린 로그가 있습니다 (+dirty).")
+    # 같은 (프리셋, 시드)인데 시나리오 내용 해시가 다르면 서로 다른 입력으로 돌린 것이다 (v3 이상 로그만 해당).
+    hashes = defaultdict(set)
+    for r in rows:
+        if r.get("scenario_sha256"):
+            hashes[(r["preset"], r["seed"])].add(r["scenario_sha256"])
+    bad = sorted(k for k, v in hashes.items() if len(v) > 1)
+    if bad:
+        shown = ", ".join(f"{p}-{sd:03d}" for p, sd in bad[:5]) + (" 외" if len(bad) > 5 else "")
+        notes.append(f"같은 (프리셋, 시드)인데 시나리오 내용이 다른 로그가 섞여 있습니다: {shown} ({len(bad)}건). "
+                     "알고리즘끼리 같은 입력으로 비교한 것이 아닙니다.")
     return notes
 
 
