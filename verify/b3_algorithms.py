@@ -103,8 +103,8 @@ def main(argv=None):
         "mismatches": errors, "incomplete_games": incomplete, "details": details,
         "scope": "저장된 실제 크기 L0/L1. 같은 목표함수의 성공한 UCS/A*/IDA* 비교",
         "limitations": ["공통 상태/비용 모델 공유: 규칙 명세의 독립 검증 아님",
-                       "구현자가 아닌 사람의 설명-코드 대조 확인은 별도 서명 필요",
-                       "CSP는 main 미등록이며 feature/csp 담당자와 수정/시험 범위 협의 필요",
+                       "검증 담당 조진수·팀원1이 교차 확인하며 별도 비구현자 리뷰는 필수 범위에서 제외",
+                       "CSP 수정 제안은 verify/csp_candidate.py에 분리. 원본 브랜치 통합은 별도 결정",
                        "IDS/IDA* memo=false 실제 크기의 시간 폭발은 별도 성능 한계"],
     }
     return finish(report, out / "b3_report.json")
