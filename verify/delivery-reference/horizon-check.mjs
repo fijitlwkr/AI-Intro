@@ -92,4 +92,31 @@ for (const policy of POLICIES) {
   });
 }
 
-console.log('Verified exact-tick dropoff, crossing pickup, and exact-tick pickup against hand calculations under all 8 base policies.');
+// Team decision, 2026-11-18: delivery completed at 500 succeeds;
+// a valid pickup started at 499 finishes at 501 before the episode fails.
+// Keep the alternative-policy cases above as exploratory historical checks.
+// These assertions use the confirmed crossing-pickup default, not an override.
+for (const policy of POLICIES.filter(candidate => candidate.successAtHorizon)) {
+  const dropoff = simulate(scenario, [...beforeDropoff, 'dropoff', 'up'], policy, inspect);
+  assert.deepEqual(observed(dropoff), {
+    ...dropoffBase, success: true, status: 'success',
+    orders: ['done'], completionTimes: [500],
+  });
+  const pickup = simulate(scenario, [...beforeLatePickup, 'pickup', 'up'], policy, inspect);
+  assert.deepEqual(observed(pickup), {
+    ...pickupBase, time: 501, orders: ['loaded'],
+  });
+  const unfinished = simulate(scenario, [...Array(500).fill('up'), 'right'], policy, inspect);
+  assert.deepEqual(observed(unfinished), {
+    time: 500, success: false, status: 'failure', orders: ['waiting'],
+    completionTimes: [null], moves: 500, invalidActions: 0, totalCost: 500,
+    averageDeliveryTime: 500, actionsUsed: 500, position: [0, 0], complaints: [0, 0],
+  });
+  const withComplaint = { ...scenario, complaints: [{ time: 480, destination: 'company' }] };
+  const pending = simulate(withComplaint, [...beforeLatePickup, 'pickup', 'up'], policy, inspect);
+  assert.deepEqual([pending.time, pending.success, pending.orderStatuses,
+    pending.complaintsExpired, pending.totalCost, pending.averageDeliveryTime, pending.actionsUsed],
+  [501, false, ['loaded'], 1, 519, 500, 500]);
+}
+
+console.log('Verified exploratory horizon policies and team-confirmed boundaries: t=500 delivery succeeds, unfinished at 500 fails, t=499 pickup finishes at 501 then fails, including complaint penalty and ignored trailing actions.');

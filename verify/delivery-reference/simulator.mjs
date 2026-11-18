@@ -54,7 +54,7 @@ Object.freeze(POLICIES);
 
 export function simulate(scenario, actions, policy, {
   skipDropoffAtHorizon = false,
-  crossingPickup = 'cancel',
+  crossingPickup = 'finish',
   includeOrderStatuses = false,
   requireSpawnAfterDeadline = false,
   onComplaintEvent,

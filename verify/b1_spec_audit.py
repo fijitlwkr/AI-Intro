@@ -87,7 +87,11 @@ def audit():
     horizon = {"clock": env.clock, "status": env.state.status, "expired": env.expired,
                "score_cost": env.metrics()["score_cost"], "total_c2": env.total_c2,
                "unfinished_H": env.metrics()["score_avg_time"], "actions": len(env.actions)}
-    check("hard_horizon", env.clock <= 500 and env.expired == 0, horizon)
+    # Team clarification, 2026-11-18: finish an in-flight pickup, then fail.
+    check("confirmed_nonpreemptive_horizon",
+          env.clock == 501 and env.state.status == (1,) and env.done and not env.success
+          and env.expired == 1 and env.metrics()["score_cost"] == 519
+          and env.metrics()["score_avg_time"] == 500, horizon)
 
     # Count represented slot values, including remaining=0 required by section 5.
     slots = {(0,)} | {(2, left) for left in range(1, 21)}
@@ -112,14 +116,15 @@ def audit():
     env.clock = 499
     env.state = State((0, 7), (1,), (0,))
     env.step(world.Action.DELIVER)
+    check("confirmed_delivery_at_H", env.clock == 500 and env.success,
+          {"clock": env.clock, "success": env.success, "team_decision": "delivery completed at H succeeds"})
     return {
         "status": "issues_found" if any(c["status"] == "fail" for c in checks) else "pass",
         "date": "2026-11-18", "spec_sha256": hashlib.sha256(SPEC.read_bytes()).hexdigest(),
         "environment": metadata(),
         "scope": "Implementation-informed specification audit; NOT an independent simulator",
         "checks": checks,
-        "clarifications": [{"name": "delivery_exactly_at_H", "observed_success": env.success, "clock": env.clock, "question": "Specify whether goal or H-failure has priority at t=500."},
-                           {"name": "difficulty_vs_n", "note": "k<=15 is true, but k can increase with n and the order-state factor is 3**k; weak difficulty growth is not guaranteed."}],
+        "clarifications": [{"name": "difficulty_vs_n", "note": "k<=15 is true, but k can increase with n and the order-state factor is 3**k; weak difficulty growth is not guaranteed."}],
     }
 
 
