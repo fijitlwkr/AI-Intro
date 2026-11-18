@@ -55,6 +55,16 @@ def test_crosscheck_main_reads_folders(tmp_path, capsys):
     assert "모든 짝이 일치한다" in capsys.readouterr().out
 
 
+def test_crosscheck_reads_nested_folders(tmp_path, capsys):
+    (tmp_path / "ours").mkdir()
+    deep = tmp_path / "theirs" / "logs" / "astar_final"
+    deep.mkdir(parents=True)
+    write(tmp_path / "ours" / "a.jsonl", games("rule", range(3)))
+    write(deep / "b.jsonl", games("rule", range(3), commit="zzz"))
+    assert cc.main(["--ours", str(tmp_path / "ours"), "--theirs", str(tmp_path / "theirs")]) == 0
+    assert "모든 짝이 일치한다" in capsys.readouterr().out
+
+
 def test_run_registered_dry_run_lists_seven_configs(capsys):
     assert rr.main(["--out", "x", "--dry-run"]) == 0
     lines = capsys.readouterr().out.strip().splitlines()
