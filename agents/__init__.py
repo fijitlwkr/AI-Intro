@@ -7,6 +7,7 @@ from .astar_agent import AStarAgent
 from .search_agents import UCSAgent, BFSAgent, DFSAgent, IDSAgent, IDAStarAgent
 from .andor_agent import AndOrAgent
 from .expectimax_agent import ExpectimaxAgent
+from .csp_agent import CSPAgent
 
 REGISTRY = {
     "random": RandomAgent,
@@ -21,4 +22,5 @@ REGISTRY = {
     "idastar": IDAStarAgent,
     "andor": AndOrAgent,
     "expectimax": ExpectimaxAgent,
+    "csp": CSPAgent,
 }
