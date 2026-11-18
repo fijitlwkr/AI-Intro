@@ -5,6 +5,8 @@ from .logic_agent import LogicAgent
 from .greedy_agent import GreedyAgent
 from .astar_agent import AStarAgent
 from .search_agents import UCSAgent, BFSAgent, DFSAgent, IDSAgent, IDAStarAgent
+from .andor_agent import AndOrAgent
+from .expectimax_agent import ExpectimaxAgent
 
 REGISTRY = {
     "random": RandomAgent,
@@ -17,4 +19,6 @@ REGISTRY = {
     "dfs": DFSAgent,
     "ids": IDSAgent,
     "idastar": IDAStarAgent,
+    "andor": AndOrAgent,
+    "expectimax": ExpectimaxAgent,
 }
