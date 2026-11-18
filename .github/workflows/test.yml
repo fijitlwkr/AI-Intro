@@ -10,3 +10,14 @@ jobs:
           python-version: "3.13"
       - run: pip install -r requirements.txt
       - run: python -m pytest -q
+  reference-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: node verify/delivery-reference/hand-check.mjs
+      - run: node verify/delivery-reference/horizon-check.mjs
+      - run: node verify/delivery-reference/complaint-deadline-check.mjs
+      - run: node verify/delivery-reference/expand-check.test.mjs
