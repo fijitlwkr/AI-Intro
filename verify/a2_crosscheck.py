@@ -2,7 +2,7 @@
 
 python -m verify.a2_crosscheck --ours runs/20261117/pairs-e79245f --theirs runs/20261117/uploaded-팀원 [--out 결과.md]
 
---ours, --theirs에는 .jsonl 파일이나 폴더(안의 *.jsonl)를 여러 개 줄 수 있다.
+--ours, --theirs에는 .jsonl 파일이나 폴더(하위 폴더까지 모든 *.jsonl)를 여러 개 줄 수 있다.
 짝짓는 기준: (알고리즘, 설정 params, 재계획, 프리셋, 시드). 짝이 있으면 점수와 행동열이 같은지 본다.
 다르면 올라온 로그의 git_commit과 python_version을 같이 보여 준다. 코드가 달랐다면 다른 것이 정상일 수 있다.
 우리 쪽에 같은 설정이 없는 로그는 '우리에게 없음'으로 나열한다(그 설정을 우리 커밋에서 돌려 보면 된다).
@@ -23,7 +23,7 @@ def collect(paths):
     files = []
     for p in paths:
         p = Path(p)
-        files += sorted(p.glob("*.jsonl")) if p.is_dir() else [p]
+        files += sorted(p.rglob("*.jsonl")) if p.is_dir() else [p]
     rows, _ = sm.dedupe(sm.load_rows(files))
     return rows, files
 
