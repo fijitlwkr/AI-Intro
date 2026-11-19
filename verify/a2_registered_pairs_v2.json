@@ -1,0 +1,18 @@
+{
+  "registered_at": "2026-11-19",
+  "note": "v2: bfs, andor, expectimax 추가 쌍. 기존 7쌍(a2_registered_pairs.json, 2026-11-17)은 바꾸지 않는다. 이 알고리즘들의 L2 시드 0~99 수치는 이미 본 뒤에 만든 쌍이므로 시드 0~99는 탐색용이고, 판정은 시드 100~199에서만 한다. 기대는 이 파일을 커밋한 뒤에 로그를 만든다. 결과를 본 뒤에 바꾸지 않고, 바꾸려면 이유와 날짜를 이 파일에 남긴다.",
+  "seeds_for_judgment": "100-199",
+  "metrics_reported": ["score_cost", "score_avg_time", "complaint_rate"],
+  "pairs": [
+    {"id": 8, "role": "judged", "a": "bfs", "b": "ucs", "expect": {"score_cost": "A>B"},
+     "text": "bfs가 더 높음. 근거: 역할표가 BFS를 '비용이 균일하지 않을 때 최적성이 깨짐을 보임'으로 정의. 총비용은 이동만 세는데 BFS는 행동 수를 최소화한다.",
+     "caveat": "andor/expectimax/bfs의 시드 0~99 방향(bfs 56.26 > ucs 55.57)을 본 뒤 정했다. 근거는 설계 서술이고 시드 0~99 결과가 아니다."},
+    {"id": 9, "role": "judged", "a": "andor", "b": "astar@never", "expect": {"complaint_rate": "A<B"},
+     "text": "항의초과율 andor가 낮음. 근거: AND-OR은 항의를 확률 사건으로 다루도록 설계된 알고리즘이고 astar never는 시작 때만 계획한다.",
+     "caveat": "andor는 replan 설정과 상관없이 매 스텝 다시 탐색하지만 로그에는 replan=never로 남는다."},
+    {"id": 10, "role": "exploratory", "a": "andor", "b": "astar@on_complaint", "expect": {"score_cost": "A<B"},
+     "text": "탐색용. 방향은 시드 0~99에서 본 결과이고 설계 근거가 아니다. 판정에 쓰지 않는다."},
+    {"id": 11, "role": "exploratory", "a": "expectimax", "b": "andor", "expect": {"score_cost": "tie"},
+     "text": "탐색용. 차이는 최악 가정과 평균 가정뿐이라는 설계 서술만 있다. 판정에 쓰지 않는다."}
+  ]
+}

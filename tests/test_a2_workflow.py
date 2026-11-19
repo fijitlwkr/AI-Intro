@@ -97,3 +97,17 @@ def test_segment_sign_shown_only_for_significant_pairs():
     r = a2.analyze_pair(rows, {"id": 1, "a": "a", "b": "b", "expect": {"score_cost": "tie"}, "text": ""}, "L2", 500)
     text = a2.render([r], {"rates": {}, "saturated": False}, [], "L2", 500, len(rows))
     assert "해당 없음(동률" in text and "**아니오**" not in text.split("순위 안정성")[1].split("시드 수 충분성")[0]
+
+
+def test_v2_set_lists_bfs_andor_expectimax_commands():
+    cmds = rr.commands("out", "L2", "100-199", rr.CONFIGS_V2)
+    names = [n for _, n in cmds]
+    assert names == ["astar_never", "astar_on_complaint", "ucs", "bfs", "andor", "expectimax"]
+    assert all("100-199" in c for c, _ in cmds)
+
+
+def test_v2_pairs_file_is_loadable_and_ids_do_not_overlap_v1():
+    v1 = json.loads(a2.PAIRS_FILE.read_text(encoding="utf-8"))["pairs"]
+    v2 = json.loads(a2.PAIRS_FILE.with_name("a2_registered_pairs_v2.json").read_text(encoding="utf-8"))["pairs"]
+    assert not {p["id"] for p in v1} & {p["id"] for p in v2}
+    assert {p["role"] for p in v2} <= {"judged", "exploratory"}
