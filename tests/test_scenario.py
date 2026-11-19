@@ -44,6 +44,8 @@ def test_committed_scenario_files_match_current_presets():
     assert files, "scenarios/ 가 비어 있다. python -m runner.make_scenarios 를 실행하세요."
     for f in files:
         s = sc_mod.load(f)
+        if s.preset.startswith("E"):     # 손으로 쓴 특화 시나리오는 생성기와 비교하지 않는다(아래 E1 테스트가 따로 검사)
+            continue
         assert s == generate(s.preset, s.seed), f"{f.name}이(가) 현재 설정으로 만든 결과와 다르다. 다시 만드세요."
 
 
@@ -53,3 +55,31 @@ def test_stale_file_is_rejected(tmp_path):
     stale = replace(s, params=tuple((k, 0.5 if k == "q" else v) for k, v in s.params))
     with pytest.raises(ValueError):
         sc_mod.check_matches_preset(stale, "L2")
+
+
+def test_make_scenarios_skips_hand_written_presets(tmp_path, monkeypatch):
+    import runner.make_scenarios as ms
+    saved = []
+    monkeypatch.setattr(sc_mod, "save", lambda s, d=None: saved.append(s.preset))
+    ms.main(["--seeds", "0-0"])
+    assert saved and not any(p.startswith("E") for p in saved)
+    with pytest.raises(SystemExit):
+        ms.main(["--presets", "E1"])
+
+
+def test_hand_written_preset_does_not_fall_back_to_generation():
+    with pytest.raises(FileNotFoundError):
+        sc_mod.load_for("E1", 1)
+
+
+def test_e1_file_follows_structure_rules():
+    from env.presets import PRESETS
+    from env.world import RESTAURANT_NAMES
+    s, from_file = sc_mod.load_for("E1", 0)
+    assert from_file
+    p = PRESETS["E1"]
+    sc_mod.check_matches_preset(s, p)
+    assert len(s.orders) == p.n and {r for r, _ in s.orders} == set(range(len(RESTAURANT_NAMES)))
+    times = [t for t, _ in s.complaints]
+    assert times == sorted(times) and all(b - a >= p.T + 1 for a, b in zip(times, times[1:]))
+    assert all(0 <= t < p.horizon for t in times)

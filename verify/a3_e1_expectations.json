@@ -1,0 +1,13 @@
+{
+  "registered_at": "2026-11-19",
+  "scenario": "scenarios/E1_000.json (프리셋 E1, 시드 0만)",
+  "note": "E1은 평균표에 섞지 않는 판별 검사다. 기대는 방향만 적고 크기는 적지 않는다. 이 파일을 커밋한 뒤에 모든 에이전트를 돌린다.",
+  "disclosure": "시나리오 파일의 동작을 확인하려고 astar(replan=never) 한 판을 이 파일을 커밋하기 전에 돌렸고, 항의 3건 중 1건 초과(score_expired=1, 총비용 70)를 보았다. 그래서 '한 번만 계획하는 astar는 2건 이상 초과'라는 처음 제안은 쓰지 않는다. 아래 기대 중 astar never 관련 부분은 이 결과를 본 뒤에 적은 것이다.",
+  "expectations": [
+    {"id": "E1-1", "text": "등록된 모든 에이전트(astar 3종, rule, logic, greedy, ucs, dfs, bfs, andor, expectimax)가 성공하고 잘못된 행동이 0건이다."},
+    {"id": "E1-2", "text": "astar(on_complaint)의 항의 초과 건수는 astar(never)의 초과 건수보다 크지 않다."},
+    {"id": "E1-3", "text": "astar(every_step)의 항의 초과 건수는 astar(never)의 초과 건수보다 크지 않다."},
+    {"id": "E1-4", "text": "항의가 이른 시각(t=1)에 멀리(아파트) 생기므로, 항의를 우선하는 rule과 logic은 초과 0건이다. 이 기대는 astar 결과를 본 뒤에 적은 설계 서술이고, 틀리면 틀린 대로 보고한다."}
+  ],
+  "not_expected": "평균배달시간과 총비용의 순위는 기대로 적지 않는다. 한 판이라 변별력이 없다."
+}
