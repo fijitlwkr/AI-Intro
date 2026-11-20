@@ -1,0 +1,423 @@
+{
+  "scenarios": 100,
+  "cases": 400,
+  "policySensitiveCases": {
+    "totalCost": 7,
+    "averageDeliveryTime": 0,
+    "success": 0,
+    "complaintsSpawned": 4,
+    "complaintsExpired": 7
+  },
+  "policies": [
+    {
+      "id": 1,
+      "expireAtDeadline": false,
+      "countTerminalSpawn": false,
+      "successAtHorizon": false
+    },
+    {
+      "id": 2,
+      "expireAtDeadline": false,
+      "countTerminalSpawn": false,
+      "successAtHorizon": true
+    },
+    {
+      "id": 3,
+      "expireAtDeadline": false,
+      "countTerminalSpawn": true,
+      "successAtHorizon": false
+    },
+    {
+      "id": 4,
+      "expireAtDeadline": false,
+      "countTerminalSpawn": true,
+      "successAtHorizon": true
+    },
+    {
+      "id": 5,
+      "expireAtDeadline": true,
+      "countTerminalSpawn": false,
+      "successAtHorizon": false
+    },
+    {
+      "id": 6,
+      "expireAtDeadline": true,
+      "countTerminalSpawn": false,
+      "successAtHorizon": true
+    },
+    {
+      "id": 7,
+      "expireAtDeadline": true,
+      "countTerminalSpawn": true,
+      "successAtHorizon": false
+    },
+    {
+      "id": 8,
+      "expireAtDeadline": true,
+      "countTerminalSpawn": true,
+      "successAtHorizon": true
+    }
+  ],
+  "conditions": {
+    "astar/every_step": [
+      {
+        "policyId": 1,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.22,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 1,
+        "complaintExpiryRate": 0.008
+      },
+      {
+        "policyId": 2,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.22,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 1,
+        "complaintExpiryRate": 0.008
+      },
+      {
+        "policyId": 3,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.22,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 1,
+        "complaintExpiryRate": 0.008
+      },
+      {
+        "policyId": 4,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.22,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 1,
+        "complaintExpiryRate": 0.008
+      },
+      {
+        "policyId": 5,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.62,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 3,
+        "complaintExpiryRate": 0.024
+      },
+      {
+        "policyId": 6,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.62,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 3,
+        "complaintExpiryRate": 0.024
+      },
+      {
+        "policyId": 7,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.62,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 3,
+        "complaintExpiryRate": 0.024
+      },
+      {
+        "policyId": 8,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.62,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 3,
+        "complaintExpiryRate": 0.024
+      }
+    ],
+    "astar/never": [
+      {
+        "policyId": 1,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 55.57,
+        "meanDeliveryTime": 39.215,
+        "complaintsSpawned": 117,
+        "complaintsExpired": 47,
+        "complaintExpiryRate": 0.4017094017094017
+      },
+      {
+        "policyId": 2,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 55.57,
+        "meanDeliveryTime": 39.215,
+        "complaintsSpawned": 117,
+        "complaintsExpired": 47,
+        "complaintExpiryRate": 0.4017094017094017
+      },
+      {
+        "policyId": 3,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 55.57,
+        "meanDeliveryTime": 39.215,
+        "complaintsSpawned": 118,
+        "complaintsExpired": 47,
+        "complaintExpiryRate": 0.3983050847457627
+      },
+      {
+        "policyId": 4,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 55.57,
+        "meanDeliveryTime": 39.215,
+        "complaintsSpawned": 118,
+        "complaintsExpired": 47,
+        "complaintExpiryRate": 0.3983050847457627
+      },
+      {
+        "policyId": 5,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 55.97,
+        "meanDeliveryTime": 39.215,
+        "complaintsSpawned": 117,
+        "complaintsExpired": 49,
+        "complaintExpiryRate": 0.4188034188034188
+      },
+      {
+        "policyId": 6,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 55.97,
+        "meanDeliveryTime": 39.215,
+        "complaintsSpawned": 117,
+        "complaintsExpired": 49,
+        "complaintExpiryRate": 0.4188034188034188
+      },
+      {
+        "policyId": 7,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 55.97,
+        "meanDeliveryTime": 39.215,
+        "complaintsSpawned": 118,
+        "complaintsExpired": 49,
+        "complaintExpiryRate": 0.4152542372881356
+      },
+      {
+        "policyId": 8,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 55.97,
+        "meanDeliveryTime": 39.215,
+        "complaintsSpawned": 118,
+        "complaintsExpired": 49,
+        "complaintExpiryRate": 0.4152542372881356
+      }
+    ],
+    "astar/on_complaint": [
+      {
+        "policyId": 1,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.22,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 1,
+        "complaintExpiryRate": 0.008
+      },
+      {
+        "policyId": 2,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.22,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 1,
+        "complaintExpiryRate": 0.008
+      },
+      {
+        "policyId": 3,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.22,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 1,
+        "complaintExpiryRate": 0.008
+      },
+      {
+        "policyId": 4,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.22,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 1,
+        "complaintExpiryRate": 0.008
+      },
+      {
+        "policyId": 5,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.62,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 3,
+        "complaintExpiryRate": 0.024
+      },
+      {
+        "policyId": 6,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.62,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 3,
+        "complaintExpiryRate": 0.024
+      },
+      {
+        "policyId": 7,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.62,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 3,
+        "complaintExpiryRate": 0.024
+      },
+      {
+        "policyId": 8,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 49.62,
+        "meanDeliveryTime": 40.9775,
+        "complaintsSpawned": 125,
+        "complaintsExpired": 3,
+        "complaintExpiryRate": 0.024
+      }
+    ],
+    "greedy/never": [
+      {
+        "policyId": 1,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 69.45,
+        "meanDeliveryTime": 47.51375,
+        "complaintsSpawned": 136,
+        "complaintsExpired": 61,
+        "complaintExpiryRate": 0.4485294117647059
+      },
+      {
+        "policyId": 2,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 69.45,
+        "meanDeliveryTime": 47.51375,
+        "complaintsSpawned": 136,
+        "complaintsExpired": 61,
+        "complaintExpiryRate": 0.4485294117647059
+      },
+      {
+        "policyId": 3,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 69.45,
+        "meanDeliveryTime": 47.51375,
+        "complaintsSpawned": 139,
+        "complaintsExpired": 61,
+        "complaintExpiryRate": 0.43884892086330934
+      },
+      {
+        "policyId": 4,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 69.45,
+        "meanDeliveryTime": 47.51375,
+        "complaintsSpawned": 139,
+        "complaintsExpired": 61,
+        "complaintExpiryRate": 0.43884892086330934
+      },
+      {
+        "policyId": 5,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 69.65,
+        "meanDeliveryTime": 47.51375,
+        "complaintsSpawned": 136,
+        "complaintsExpired": 62,
+        "complaintExpiryRate": 0.45588235294117646
+      },
+      {
+        "policyId": 6,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 69.65,
+        "meanDeliveryTime": 47.51375,
+        "complaintsSpawned": 136,
+        "complaintsExpired": 62,
+        "complaintExpiryRate": 0.45588235294117646
+      },
+      {
+        "policyId": 7,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 69.65,
+        "meanDeliveryTime": 47.51375,
+        "complaintsSpawned": 139,
+        "complaintsExpired": 62,
+        "complaintExpiryRate": 0.4460431654676259
+      },
+      {
+        "policyId": 8,
+        "successful": 100,
+        "failed": 0,
+        "incomplete": 0,
+        "meanTotalCost": 69.65,
+        "meanDeliveryTime": 47.51375,
+        "complaintsSpawned": 139,
+        "complaintsExpired": 62,
+        "complaintExpiryRate": 0.4460431654676259
+      }
+    ]
+  }
+}

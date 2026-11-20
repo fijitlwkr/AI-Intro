@@ -159,3 +159,45 @@ python -m runner.make_scenarios --presets L2 --seeds 0-99
 ```
 
 파일이 오래되면 `python -m pytest`가 알려 준다.
+
+## 파트 B 검증 도구 (조진수)
+
+별도 검증 브랜치에서 작업하며 main이나 다른 팀원의 브랜치에 직접 push하지 않는다.
+
+```powershell
+# B1: 기록된 행동열 재생 + 별도 산식/집계 검산 (독립 시뮬레이터 아님)
+python -m verify.b1_metrics logs/greedy_final logs/astar_final logs/replanning_final --out logs/runs/20261117/b/b1_metrics.json
+
+# B2: 400개 시나리오 구조·분포와 A* 비용 이상치
+python -m verify.b2_scenarios --outlier-logs "logs/astar_final/L1_*_c1.jsonl" --out logs/runs/20261117/b/b2_scenarios.json
+
+# B3: 실제 크기 L0/L1, 두 목적함수, 팀원 UCS와 A* 3종 등 교차 검사
+python -m verify.b3_algorithms --seeds 0-9 --out-dir logs/runs/20261117/b/b3
+
+# 반복 심화는 memo=true 변형임을 명시하고 별도 실행
+python -m verify.b3_algorithms --presets L1 --seeds 0-2 --include-iterative --out-dir logs/runs/20261117/b/b3_iterative
+
+# B1-b: 한 번에 하나만 실행. 5회 반복 CV, 외부 계측, 순서/캐시 진단
+python -m verify.b1_timing --param heuristic=mst --param objective=c1 --out logs/runs/20261117/b/b1_timing.json
+```
+
+- B3/타이밍은 미커밋 코드에서 실행을 거부한다. 결과 JSON에 날짜, 커밋, Python, OS, 기계 식별을 남긴다.
+- B1은 현재 공용 DeliveryEnv로 행동열을 재생하고 총비용·완료시각 합·미완료 H 처리·전체 합산 비율·나쁜 10% 평균을 별도 산식으로 확인한다. 전이/사건 판정은 원래 환경을 공유하므로 명세 기반 독립 구현의 증거가 아니다. 비용을 일부러 바꾼 로그를 거부하는 테스트도 있다.
+- B1 독립 시뮬레이터는 상세 규칙 명세와 그 구현을 읽지 않은 별도 작성자가 필요하다. 이 대화는 기존 규칙 구현을 읽은 이력이 있어 독립성을 주장하지 않는다. B1 도구가 불일치 0건이어도 전체 판정은 conditional이다.
+- B2는 생성기 일치(A1)와 별개인 내용 검사다. 분포의 근사 3SE 경고는 탐색적 경고이며, 다중 비교/메뉴 포함 조건 때문에 단독으로 버그를 입증하지 않는다. 이상치는 같은 설정·커밋끼리의 IQR 1.5배 기준으로 목록화한다.
+- B3는 같은 목적함수에서만 성공한 UCS와 A*/IDA* 결과를 비교한다(c2는 같은 판의 평균배달시간으로 비교해도 동일). 미완료 판은 숨기지 않고 따로 기록한다. 공통 환경의 규칙 오류는 이 비교만으로 검증되지 않는다. 검증 담당 조진수·팀원1이 교차 확인하며 별도의 비구현자 리뷰는 필수 범위에서 제외한다(2026-11-17 사용자 결정).
+- CSP 원본은 main 미등록이며 담당자 브랜치를 직접 수정하지 않는다. 수정 제안과 동결 원본은 아래의 별도 모듈로 관리한다. 공식 에이전트 통합은 담당자와 별도 결정한다.
+- 타이밍 도구는 계측 래퍼의 오버헤드가 있으므로 실제 성능표에 섞지 않는다. CV가 10%를 넘으면 해당 조건의 시간 안정성은 통과로 쓰지 않는다.
+- JSON 판정은 pass/conditional/fail이다. 통과한 범위와 미검증 범위를 나눠 보고하고, 최종 발표용 재실행은 검토 후 병합된 코드에서 한다.
+
+### CSP 반례와 수정 제안
+
+- 원본: `feature/csp` 커밋 `d9fb289`, `agents/csp_agent.py`의 Git blob `56e412b07f8ab87e2c544da959557dd3b943f592`를 `verify/fixtures/csp_d9fb289.py`에 동결했다. 원본 보존 검사를 포함한다.
+- 반례 1: 김치·피자를 이미 적재한 상태에서 탕수육 적재를 제약 검사 함수가 허용한다.
+- 반례 2: 피자·탕수육을 이미 적재하고 김치 식당에 있는 상태에서 원본 에이전트가 실제로 부적법한 LOAD를 선택한다.
+- 제안 구현: `verify/csp_candidate.py:CSPCandidateAgent`. 현재 적재 상태와 일괄 LOAD/DELIVER를 반영하고, 부분 배정은 확정된 연속 접두부만 검사해 정상 해를 성급히 제거하지 않는다.
+- MRV/FC/백트래킹은 원본을 유지한다. 부분 배정 검사 완화로 탐색이 늘지 않도록, 이미 적재한 주문 배달 -> 식당별 P 묶음 -> D 묶음인 실행 가능한 기본 순서의 값을 먼저 시도한다. 비용 최적화나 거리 기반 방문 순서 개선이라고 주장하지 않는다.
+- 재계획 설정과 시간 제한 검사를 적용한다. 해가 없거나 계획이 부적법하면 CSPPlanError를 내며 임의의 UP 행동으로 숨기지 않는다. REGISTRY에는 후보를 자동 등록하지 않는다.
+- 회귀 검사: `python -m pytest -q tests/test_csp_candidate.py`. 전체 대기 720개, 부분 적재 24개 작업 순서를 공용 환경의 합법 행동과 비교한다. 이 비교는 독립 규칙 구현이 아니다.
+- 실제 판 재검증: `python -m verify.b3_csp_recheck --out-dir logs/runs/20261117/b/csp_candidate`. L0~L3 각 100판과 L2의 재계획/FC-off 진단 각 10판을 수행한다. 모든 결과는 수정 후보의 결과이며 원본 전체 성능 결과로 사용하지 않는다.
+- 상세 규칙 명세는 2026-11-18 수령 후 별도 검증을 진행할 예정이며, 그 전까지 명세 기반 독립 시뮬레이터는 미완료로 남긴다.
