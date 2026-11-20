@@ -11,7 +11,8 @@ from .run import parse_seeds
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--presets", nargs="+", default=sorted(PRESETS), choices=sorted(PRESETS))
+    generated = sorted(n for n in PRESETS if not n.startswith("E"))   # E로 시작하는 특화 시나리오는 손으로 쓴 파일이라 덮어쓰지 않는다
+    ap.add_argument("--presets", nargs="+", default=generated, choices=generated)
     ap.add_argument("--seeds", default="0-19")
     args = ap.parse_args(argv)
     count = 0

@@ -27,6 +27,9 @@ PRESETS = {
     "L2": Preset("L2", n=8, q=0.03, T=20, P=20, menu_ban=True, load_time=2),
     # T=15는 확정 값이다. q, P는 DRAFT.
     "L3": Preset("L3", n=12, q=0.06, T=15, P=40, menu_ban=True, load_time=2),
+    # E로 시작하는 프리셋은 손으로 쓴 특화 시나리오용이다(검증 A3). 설정값은 L2와 같고, 시드는 0만 있다.
+    # 평균표에 섞지 않는다. make_scenarios는 이 프리셋을 건너뛴다(덮어쓰면 손으로 쓴 파일이 사라진다).
+    "E1": Preset("E1", n=8, q=0.03, T=20, P=20, menu_ban=True, load_time=2),
 }
 
 DEFAULT_PRESET = "L2"

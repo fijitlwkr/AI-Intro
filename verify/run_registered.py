@@ -25,6 +25,25 @@ CONFIGS = [  # (파일 이름 앞부분, runner.run 인자)
     ("ucs", ["--agent", "ucs"]),
     ("dfs", ["--agent", "dfs"]),
 ]
+CONFIGS_V2 = [  # a2_registered_pairs_v2.json 쌍에 필요한 설정. 시드 100~199 판정용
+    ("astar_never", ["--agent", "astar", "--replan", "never"]),
+    ("astar_on_complaint", ["--agent", "astar", "--replan", "on_complaint"]),
+    ("ucs", ["--agent", "ucs"]),
+    ("bfs", ["--agent", "bfs"]),
+    ("andor", ["--agent", "andor"]),
+    ("expectimax", ["--agent", "expectimax"]),
+]
+
+
+CONFIGS_V3 = [  # a2_registered_pairs_v3.json 쌍에 필요한 설정. L3 시드 0~99 판정용
+    ("astar_never", ["--agent", "astar", "--replan", "never"]),
+    ("ucs", ["--agent", "ucs"]),
+    ("bfs", ["--agent", "bfs"]),
+    ("andor", ["--agent", "andor"]),
+    ("expectimax", ["--agent", "expectimax"]),
+    ("idastar_memo", ["--agent", "idastar", "--param", "memo=true"]),
+]
+SETS = {"v1": CONFIGS, "v2": CONFIGS_V2, "v3": CONFIGS_V3}
 
 
 def git(*a):
@@ -49,9 +68,9 @@ def hardware(cpu=None, ram_gb=None):
     return info
 
 
-def commands(out, preset, seeds):
+def commands(out, preset, seeds, configs=None):
     return [([sys.executable, "-m", "runner.run", *args, "--preset", preset, "--seeds", seeds,
-              "--out", str(Path(out) / f"{name}_{preset}_s{seeds.replace('-', '-')}.jsonl")], name) for name, args in CONFIGS]
+              "--out", str(Path(out) / f"{name}_{preset}_s{seeds.replace('-', '-')}.jsonl")], name) for name, args in (configs or CONFIGS)]
 
 
 def main(argv=None):
@@ -59,13 +78,14 @@ def main(argv=None):
     ap.add_argument("--out", required=True)
     ap.add_argument("--preset", default="L2")
     ap.add_argument("--seeds", default="0-99")
+    ap.add_argument("--set", choices=sorted(SETS), default="v1", help="v1: 기존 7쌍 설정, v2: bfs/andor/expectimax 쌍(L2), v3: L3용 쌍")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--allow-dirty", action="store_true")
     ap.add_argument("--cpu")
     ap.add_argument("--ram-gb", type=float)
     args = ap.parse_args(argv)
 
-    cmds = commands(args.out, args.preset, args.seeds)
+    cmds = commands(args.out, args.preset, args.seeds, SETS[args.set])
     if args.dry_run:
         for c, _ in cmds:
             print(" ".join(c))
@@ -78,7 +98,7 @@ def main(argv=None):
     for c, name in cmds:
         print(f"== {name}")
         subprocess.run(c, cwd=ROOT, check=True)
-    manifest = {"commit": git("rev-parse", "--short", "HEAD"), "preset": args.preset, "seeds": args.seeds,
+    manifest = {"commit": git("rev-parse", "--short", "HEAD"), "preset": args.preset, "seeds": args.seeds, "set": args.set,
                 "python": platform.python_version(), "dirty": is_dirty(),
                 "recorded_at": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
                 "files": sorted(p.name for p in out.glob("*.jsonl"))}

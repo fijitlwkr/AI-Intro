@@ -97,3 +97,36 @@ def test_segment_sign_shown_only_for_significant_pairs():
     r = a2.analyze_pair(rows, {"id": 1, "a": "a", "b": "b", "expect": {"score_cost": "tie"}, "text": ""}, "L2", 500)
     text = a2.render([r], {"rates": {}, "saturated": False}, [], "L2", 500, len(rows))
     assert "해당 없음(동률" in text and "**아니오**" not in text.split("순위 안정성")[1].split("시드 수 충분성")[0]
+
+
+def test_v2_set_lists_bfs_andor_expectimax_commands():
+    cmds = rr.commands("out", "L2", "100-199", rr.CONFIGS_V2)
+    names = [n for _, n in cmds]
+    assert names == ["astar_never", "astar_on_complaint", "ucs", "bfs", "andor", "expectimax"]
+    assert all("100-199" in c for c, _ in cmds)
+
+
+def test_v2_pairs_file_is_loadable_and_ids_do_not_overlap_v1():
+    v1 = json.loads(a2.PAIRS_FILE.read_text(encoding="utf-8"))["pairs"]
+    v2 = json.loads(a2.PAIRS_FILE.with_name("a2_registered_pairs_v2.json").read_text(encoding="utf-8"))["pairs"]
+    assert not {p["id"] for p in v1} & {p["id"] for p in v2}
+    assert {p["role"] for p in v2} <= {"judged", "exploratory"}
+
+
+def test_e1_report_has_one_row_per_agent(tmp_path):
+    from verify import a3_e1_report as rep
+    sc = generate("L2", 0)
+    rows = [dict(run_game(REGISTRY["rule"](), sc, run_id="x", git_commit="aaa"), preset="E1", seed=0)]
+    write(tmp_path / "e1.jsonl", rows)
+    text = rep.render(rep.read([tmp_path]))
+    assert text.count("\n") == 2 and "rule@never" in text
+
+
+def test_v3_set_and_pairs_file():
+    cmds = rr.commands("out", "L3", "0-99", rr.SETS["v3"])
+    assert [n for _, n in cmds] == ["astar_never", "ucs", "bfs", "andor", "expectimax", "idastar_memo"]
+    assert "memo=true" in cmds[-1][0]
+    v3 = json.loads(a2.PAIRS_FILE.with_name("a2_registered_pairs_v3.json").read_text(encoding="utf-8"))["pairs"]
+    used = {p["id"] for f in ("a2_registered_pairs.json", "a2_registered_pairs_v2.json")
+            for p in json.loads(a2.PAIRS_FILE.with_name(f).read_text(encoding="utf-8"))["pairs"]}
+    assert not used & {p["id"] for p in v3}

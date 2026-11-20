@@ -1,0 +1,17 @@
+{
+  "registered_at": "2026-11-20",
+  "note": "v3: L3용 쌍. 기존 7쌍(v1)과 v2는 바꾸지 않는다. 쌍 8~10과 12~13은 L3 시드 0~99(bfs, andor, expectimax, idastar는 L3 시드 0~99를 본 적이 없다), 쌍 11은 L3 시드 100~199에서 판정한다. 기대는 이 파일을 커밋한 뒤에 로그를 만든다. 결과를 본 뒤에 바꾸지 않는다.",
+  "metrics_reported": ["score_cost", "score_avg_time", "complaint_rate"],
+  "pairs": [
+    {"id": 14, "role": "judged", "seeds": "L3 0-99", "a": "andor", "b": "astar@never", "expect": {"complaint_rate": "A<B"},
+     "text": "항의초과율 andor가 낮음. 근거: AND-OR은 항의를 확률 사건으로 다루도록 설계됐고(L2 시드 100~199에서 같은 방향이 유의했다), astar never는 시작 때만 계획한다."},
+    {"id": 15, "role": "judged", "seeds": "L3 0-99", "a": "bfs", "b": "ucs", "expect": {"score_cost": "A>B"},
+     "text": "bfs가 ucs보다 총비용이 낮지 않다(높음 기대, 동률이면 미충족). 근거: 역할표의 BFS 정의. L2 시드 100~199에서는 경계였다(+0.61)."},
+    {"id": 16, "role": "exploratory", "seeds": "L3 0-99", "a": "expectimax", "b": "andor", "expect": {"score_cost": "tie"},
+     "text": "탐색용. 차이는 최악 가정과 평균 가정뿐이라는 설계 서술만 있다."},
+    {"id": 17, "role": "exploratory", "seeds": "L3 0-99", "a": "idastar:memo=true", "b": "astar@never", "expect": {"score_cost": "tie"},
+     "text": "탐색용. 같은 목적함수를 최적화하는 알고리즘이라는 설명에 근거한 동률 기대. 두 알고리즘의 기본 휴리스틱이 같은지 확인하지 않았다."},
+    {"id": 12, "role": "judged", "seeds": "L3 100-199", "a": "astar@never", "b": "rule", "expect": {"score_cost": "A>B"},
+     "text": "L3에서 astar(never)의 총비용이 rule보다 높음. 이 기대는 L3 시드 0~99 결과(+11.18, 뒤집힘)를 본 뒤에 적었다. 판정은 보지 않은 시드 100~199에서만 한다. 기존 v1 #1(L2 기대 A<B)은 바꾸지 않는다."}
+  ]
+}
