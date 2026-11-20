@@ -147,4 +147,6 @@ def load_for(preset_name, seed, directory=None):
         sc = load(path)
         check_matches_preset(sc, preset)
         return sc, True
+    if preset_name.startswith("E"):
+        raise FileNotFoundError(f"{path.name}이(가) 없다. E로 시작하는 특화 시나리오는 손으로 쓴 파일만 있고 즉석 생성하지 않는다.")
     return generate(preset, seed), False

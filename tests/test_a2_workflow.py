@@ -111,3 +111,12 @@ def test_v2_pairs_file_is_loadable_and_ids_do_not_overlap_v1():
     v2 = json.loads(a2.PAIRS_FILE.with_name("a2_registered_pairs_v2.json").read_text(encoding="utf-8"))["pairs"]
     assert not {p["id"] for p in v1} & {p["id"] for p in v2}
     assert {p["role"] for p in v2} <= {"judged", "exploratory"}
+
+
+def test_e1_report_has_one_row_per_agent(tmp_path):
+    from verify import a3_e1_report as rep
+    sc = generate("L2", 0)
+    rows = [dict(run_game(REGISTRY["rule"](), sc, run_id="x", git_commit="aaa"), preset="E1", seed=0)]
+    write(tmp_path / "e1.jsonl", rows)
+    text = rep.render(rep.read([tmp_path]))
+    assert text.count("\n") == 2 and "rule@never" in text
