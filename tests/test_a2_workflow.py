@@ -120,3 +120,13 @@ def test_e1_report_has_one_row_per_agent(tmp_path):
     write(tmp_path / "e1.jsonl", rows)
     text = rep.render(rep.read([tmp_path]))
     assert text.count("\n") == 2 and "rule@never" in text
+
+
+def test_v3_set_and_pairs_file():
+    cmds = rr.commands("out", "L3", "0-99", rr.SETS["v3"])
+    assert [n for _, n in cmds] == ["astar_never", "ucs", "bfs", "andor", "expectimax", "idastar_memo"]
+    assert "memo=true" in cmds[-1][0]
+    v3 = json.loads(a2.PAIRS_FILE.with_name("a2_registered_pairs_v3.json").read_text(encoding="utf-8"))["pairs"]
+    used = {p["id"] for f in ("a2_registered_pairs.json", "a2_registered_pairs_v2.json")
+            for p in json.loads(a2.PAIRS_FILE.with_name(f).read_text(encoding="utf-8"))["pairs"]}
+    assert not used & {p["id"] for p in v3}

@@ -35,6 +35,17 @@ CONFIGS_V2 = [  # a2_registered_pairs_v2.json 쌍에 필요한 설정. 시드 10
 ]
 
 
+CONFIGS_V3 = [  # a2_registered_pairs_v3.json 쌍에 필요한 설정. L3 시드 0~99 판정용
+    ("astar_never", ["--agent", "astar", "--replan", "never"]),
+    ("ucs", ["--agent", "ucs"]),
+    ("bfs", ["--agent", "bfs"]),
+    ("andor", ["--agent", "andor"]),
+    ("expectimax", ["--agent", "expectimax"]),
+    ("idastar_memo", ["--agent", "idastar", "--param", "memo=true"]),
+]
+SETS = {"v1": CONFIGS, "v2": CONFIGS_V2, "v3": CONFIGS_V3}
+
+
 def git(*a):
     return subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True).stdout.strip()
 
@@ -67,14 +78,14 @@ def main(argv=None):
     ap.add_argument("--out", required=True)
     ap.add_argument("--preset", default="L2")
     ap.add_argument("--seeds", default="0-99")
-    ap.add_argument("--set", choices=["v1", "v2"], default="v1", help="v1: 기존 7쌍 설정, v2: bfs/andor/expectimax 쌍")
+    ap.add_argument("--set", choices=sorted(SETS), default="v1", help="v1: 기존 7쌍 설정, v2: bfs/andor/expectimax 쌍(L2), v3: L3용 쌍")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--allow-dirty", action="store_true")
     ap.add_argument("--cpu")
     ap.add_argument("--ram-gb", type=float)
     args = ap.parse_args(argv)
 
-    cmds = commands(args.out, args.preset, args.seeds, CONFIGS_V2 if args.set == "v2" else None)
+    cmds = commands(args.out, args.preset, args.seeds, SETS[args.set])
     if args.dry_run:
         for c, _ in cmds:
             print(" ".join(c))
